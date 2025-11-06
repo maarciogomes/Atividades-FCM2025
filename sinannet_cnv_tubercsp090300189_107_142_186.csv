@@ -1,0 +1,120 @@
+TUBERCULOSE - Casos confirmados notificados no Sistema de Informação de Agravos de Notificação - São Paulo
+Casos confirmados por Município de notificação e Ano Notificação
+Fx Etária: 20-39
+Sexo: Feminino
+Aids: Sim
+Confirmação laboratorial: Com confirmação laboratorial
+HIV: Positivo
+Período:2023-2024
+"Município de notificação";"2023";"2024";"2025";"Total"
+"350160 AMERICANA";1;2;-;3
+"350210 ANDRADINA";-;1;-;1
+"350330 ARARAS";1;-;-;1
+"350500 BARAO DE ANTONINA";2;-;-;2
+"350550 BARRETOS";-;2;-;2
+"350570 BARUERI";2;1;-;3
+"350950 CAMPINAS";5;3;-;8
+"351040 CAPIVARI";2;1;-;3
+"351050 CARAGUATATUBA";-;1;-;1
+"351060 CARAPICUIBA";2;2;-;4
+"351110 CATANDUVA";1;-;-;1
+"351280 COSMOPOLIS";-;1;-;1
+"351300 COTIA";1;1;-;2
+"351340 CRUZEIRO";1;-;-;1
+"351350 CUBATAO";-;1;-;1
+"351380 DIADEMA";1;2;-;3
+"351500 EMBU DAS ARTES";-;1;-;1
+"351518 ESPIRITO SANTO DO PINHAL";-;1;-;1
+"351570 FERRAZ DE VASCONCELOS";1;-;-;1
+"351630 FRANCISCO MORATO";1;1;-;2
+"351640 FRANCO DA ROCHA";-;1;-;1
+"351840 GUARATINGUETA";1;-;-;1
+"351870 GUARUJA";2;3;-;5
+"351880 GUARULHOS";1;2;1;4
+"351907 HORTOLANDIA";-;1;-;1
+"352030 IGUAPE";2;-;-;2
+"352100 IPERO";-;1;-;1
+"352210 ITANHAEM";-;1;-;1
+"352220 ITAPECERICA DA SERRA";1;-;-;1
+"352230 ITAPETININGA";-;1;-;1
+"352250 ITAPEVI";1;-;-;1
+"352260 ITAPIRA";-;1;-;1
+"352310 ITAQUAQUECETUBA";1;2;-;3
+"352390 ITU";-;1;-;1
+"352500 JANDIRA";1;-;-;1
+"352590 JUNDIAI";1;3;-;4
+"352720 LORENA";1;-;-;1
+"352840 MAIRINQUE";1;-;-;1
+"352850 MAIRIPORA";-;1;-;1
+"352900 MARILIA";-;2;-;2
+"352940 MAUA";1;4;-;5
+"353060 MOGI DAS CRUZES";-;2;1;3
+"353070 MOGI GUACU";1;-;-;1
+"353190 MORRO AGUDO";-;1;-;1
+"353250 NEVES PAULISTA";-;1;-;1
+"353340 NOVA ODESSA";-;1;-;1
+"353410 ORIENTE";-;1;-;1
+"353440 OSASCO";2;1;-;3
+"353470 OURINHOS";1;2;-;3
+"353720 PEDRO DE TOLEDO";1;-;-;1
+"353760 PERUIBE";1;-;-;1
+"353870 PIRACICABA";2;2;-;4
+"354100 PRAIA GRANDE";2;1;-;3
+"354340 RIBEIRAO PRETO";2;5;-;7
+"354600 SANTA BRANCA";1;-;-;1
+"354780 SANTO ANDRE";1;1;-;2
+"354850 SANTOS";1;1;-;2
+"354870 SAO BERNARDO DO CAMPO";3;3;-;6
+"354890 SAO CARLOS";1;-;-;1
+"354940 SAO JOAQUIM DA BARRA";-;1;-;1
+"354980 SAO JOSE DO RIO PRETO";3;3;-;6
+"354990 SAO JOSE DOS CAMPOS";1;1;-;2
+"355030 SAO PAULO";70;53;2;125
+"355070 SAO SEBASTIAO";1;-;-;1
+"355100 SAO VICENTE";-;3;-;3
+"355220 SOROCABA";1;2;-;3
+"355240 SUMARE";1;-;-;1
+"355250 SUZANO";1;-;-;1
+"355270 TABATINGA";1;-;-;1
+"355280 TABOAO DA SERRA";-;1;-;1
+"355400 TATUI";1;1;-;2
+"355540 UBATUBA";3;1;-;4
+"355650 VARZEA PAULISTA";-;1;-;1
+"355710 VOTUPORANGA";-;1;-;1
+"Total";137;135;4;276
+ Fonte: Ministério da Saúde/SVSA - Sistema de Informação de Agravos de Notificação - Sinan Net 
+ Notas:
+ 
+ Excluídos os registros encerrados com mudança de diagnóstico.
+ Períodos disponíveis - Correspondem aos anos de diagnóstico dos casos (até 2024).
+ Para tabular dados epidemiológicos de um determinado ano selecione na linha a variável de interesse,
+		e todos os posteriores até o ano atual (para incluir casos notificados com atraso) e em "Seleções Disponíveis"
+		assinale os anos do diagnóstico: - Ex. para tabular o nº de casos diagnosticados em 2007 segundo UF de residência
+		selecione: na linha a "UF de residência" na Coluna a variável "Ano do diagnóstico" em Períodos disponíveis 2007
+		até o ano atual em Seleções o "Ano do diagnóstico" de 2007.
+ Para cálculo da incidência selecione o local de residência e as seguintes categorias da variável "Tipo de entrada":
+		caso novo, não sabe e pós óbito.
+ A variável "Beneficiário de programa de transferência de renda do governo" não contém dados do Estado de São Paulo (SP).
+		Quanto a variável "Terapia antirretroviral durante o tratamento da TB", os dados do estado de SP foram inseridos
+		a partir do segundo semestre de 2016.
+ Não é possível calcular indicadores relacionados aos contatos de tuberculose.
+ Em 2014, foram incluídas as seguintes variáveis no Sinan Net (Tuberculose): populações especiais (população privada de
+		liberdade, população em situação de rua, profissional de saúde e imigrante), doenças e agravos associados (uso de drogas
+		ilícitas e tabagismo), beneficiário de programa de transferência de renda do governo, terapia antirretroviral durante o
+		tratamento para a TB, teste molecular rápido TB (TRM-TB) e teste de sensibilidade; as categorias: pós-óbito na variável
+		tipo de entrada; e as categorias: mudança de esquema, falência e abandono primário na variável situação de encerramento.
+		Por conta disso, não há informações para essas variáveis em anos anteriores.
+ A variável "institucionalizado" foi descontinuada em 2015. Portanto, para análise referente à população privada de
+		liberdade após esse período, utilizar a variável "PPL" (população privada de liberdade).
+ Para informações detalhadas sobre o Sinan – Tuberculose e sobre as análises de indicadores epidemiológicos e operacionais
+		da tuberculose, acessar o link: http://portalsinan.saude.gov.br/tuberculose
+ Em caso de dúvidas, encaminhar e-mail para: tuberculose@saude.gov.br
+ Dados de 2001 a 2019 estão finalizados.
+ Dados de 2019 passaram por correção em setembro/2025.
+ Dados de 2020 a 2024 atualizados em setembro/2025, sujeitos à revisão.
+ Dados a partir de 2020 referentes ao estado do Espírito Santo são oriundos do Sistema de Informação e-SUS VS, em uso pelo
+		estado desde janeiro de 2020.
+ Dados referentes ao estado de São Paulo são oriundos do Sistema de Controle de Pacientes com Tuberculose TBWEB.
+ Dados disponibilizados no TABNET em 10/2025, após homologação da Coordenação Geral de Vigilância da Tuberculose, Micoses
+		Endêmicas e Micobactérias não Tuberculosas /CGTM/SVSA
+ 
