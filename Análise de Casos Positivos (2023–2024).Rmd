@@ -1,0 +1,133 @@
+---
+title: "Análise de Casos de Tuberculose (2023-2024)"
+author: "Gabriel, Marcio, Valdemiro, Raquel"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(stringr)
+library(scales)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+## 1. Introdução
+
+Este relatório apresenta a análise comparativa entre os casos de Tuberculose no período de 2023 a 2024 no estado de São Paulo.
+
+---
+
+## 2. Importação e Estrutura dos Dados
+
+```{r}
+dados <- read_csv2(
+  "Dados_agrupados.csv",
+  locale = locale(encoding = "Latin1")
+)
+glimpse(dados)
+```
+
+---
+
+## 3. Limpeza e Organização
+
+```{r}
+dados <- dados %>%
+  rename(Masculino = Maculino_2023) %>%
+  mutate(
+    Municipio = `Município de notificação` %>%
+      str_remove_all("^\\s*\\d+\\s*[-]?\\s*") %>%
+      str_trim() %>%
+      str_to_title()
+  )
+
+dados_sel <- dados %>%
+  select(
+    Municipio,
+    starts_with("Positivo"),
+    starts_with("Negativo")
+  )
+```
+
+---
+
+## 4. Diferença entre anos
+
+```{r}
+dados_diff <- dados_sel %>%
+  mutate(Dif = Positivo_2024 - Positivo_2023)
+```
+
+---
+
+## 5. Top 10 aumentos e reduções
+
+```{r}
+top_aumento <- dados_diff %>% arrange(desc(Dif)) %>% slice(1:10)
+top_reducao <- dados_diff %>% arrange(Dif) %>% slice(1:10)
+```
+
+---
+
+## 6. Gráficos
+
+### 6.1 Aumento
+
+```{r}
+ggplot(top_aumento,
+       aes(x = reorder(Municipio, Dif), y = Dif)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  geom_text(aes(label = Dif), hjust = -0.1) +
+  labs(
+    title = "Top 10 Municípios com Maior Aumento",
+    x = "Município", y = "Aumento de casos"
+  ) +
+  theme_minimal()
+```
+
+### 6.2 Redução
+
+```{r}
+ggplot(top_reducao,
+       aes(x = reorder(Municipio, -Dif), y = Dif)) +
+  geom_col(fill="#ee9a00") +
+  coord_flip() +
+  geom_text(aes(label = Dif), hjust = -0.1) +
+  labs(
+    title = "Top 10 Municípios com Maior Redução",
+    x = "Município",
+    y = "Redução de casos"
+  ) +
+  theme_minimal() +
+  scale_y_continuous(breaks = pretty_breaks())
+```
+
+---
+
+## 7. Ranking completo
+
+```{r}
+ranking <- dados_diff %>%
+  mutate(
+    Classificacao = case_when(
+      Dif > 0 ~ "Aumento",
+      Dif < 0 ~ "Redução",
+      TRUE ~ "Estável"
+    )
+  ) %>%
+  arrange(desc(Dif))
+
+head(ranking, 20)
+```
+
+---
+
+## 8. Conclusões
+
+A cidade de Lupercio apresentou o maior aumento de casos de Tuberculose entre os anos de 2023 para 2024 (392 novos casos), e a cidade de Lins a maior redução (redução em 8 casos).
