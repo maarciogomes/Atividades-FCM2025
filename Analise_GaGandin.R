@@ -1,75 +1,142 @@
-library(tidyverse)
-library(stringr)
+# ======================================
+# 0. Preparação do Ambiente
+# ======================================
 
-dados <- read_csv2("Dados_agrupados.csv", locale = locale(encoding = "Latin1"))
+# Verificar se estou no projeto correto: "Atividades-FCM2025-RStudio"
+
+library(tidyverse)   # Manipulação e visualização de dados
+library(stringr)     # Manipulação de texto
+
+# ======================================
+# 1. Importação dos Dados
+# ======================================
+
+# read_csv2() lê CSV com separador ";" e decimal ","
+# locale(encoding="Latin1") garante leitura correta de acentos (ã, ç, é...)
+dados <- read_csv2("Dados_agrupados.csv",
+                   locale = locale(encoding = "Latin1"))
 
 glimpse(dados)
 
-# 1) Corrigir nomes de colunas com erro de digitação
-dados_corr <- dados %>%
-  rename_with(~ str_replace_all(., regex("Maculino", ignore_case = TRUE), "Masculino"))
+# ======================================
+# 2. Limpeza dos Dados
+# ======================================
 
-# 2) Extrair só o nome da cidade (remover prefixo numérico + espaços)
-dados_corr <- dados_corr %>%
+dados <- dados %>%
+  
+  # 2.1 Corrigir erro de digitação em nome de coluna
+  rename(Masculino = Maculino_2023) %>% 
+  
+  # 2.2 Limpar coluna de município
   mutate(
     Municipio = `Município de notificação` %>%
-      # remove números no começo e espaços (ex: "350010 " ou "350010-")
-      str_remove_all("^\\s*\\d+\\s*[-]?\\s*") %>%
-      str_trim()
+      str_remove_all("^\\s*\\d+\\s*[-]?\\s*") %>%  # remove prefixos numéricos
+      str_trim() %>%                               # remove espaços extras
+      str_to_title()                               # "ADAMANTINA" → "Adamantina"
   )
 
-# "ADAMANTINA" -> "Adamantina")
-# use se quiser nomes com primeira letra maiúscula:
-dados_corr <- dados_corr %>%
-  mutate(Municipio = str_to_title(tolower(Municipio)))
+# ======================================
+# 3. Seleção de Colunas de Interesse
+# ======================================
 
-# 3) Selecionar colunas de interesse (exemplos)
-#   a) manter apenas Municipio e colunas que começam com "Positivo", "Negativo", "Feminino", "Masculino"
-dados_sel <- dados_corr %>%
-  select(Municipio, starts_with("Positivo"), starts_with("Negativo"),
-         starts_with("Feminino"), starts_with("Masculino"))
+dados_sel <- dados %>%
+  select(
+    Municipio,
+    starts_with("Positivo"),
+    starts_with("Negativo")
+  )
 
-#4) Criando variável que representa a diferença de casos positivos dde 2024 - 2023
-dados_diff <- dados_corr %>%
+# ======================================
+# 4. Diferença de casos positivos (2024 - 2023)
+# ======================================
+
+dados_diff <- dados_sel %>%
   mutate(
-    Dif1 = Positivo_2024 - Positivo_2023,
-    Dif2 = Positivo_2023 - Positivo_2024
+    Dif = Positivo_2024 - Positivo_2023
   )
 
-#5) Filtrar as 10 cidades que mais aumentaram os casos
+# ======================================
+# 5. Top cidades com maior aumento e maior redução
+# ======================================
+
 top_aumento <- dados_diff %>%
-  arrange(desc(Dif1)) %>%
+  arrange(desc(Dif)) %>%
   slice(1:10)
 
 top_reducao <- dados_diff %>%
-  arrange(desc(Dif2)) %>%
+  arrange(Dif) %>%   # menor Dif = maior redução
   slice(1:10)
 
+# ======================================
+# 6. Gráficos
+# ======================================
+
+# Tema único
+tema <- theme_minimal(base_size = 12)
 
 library(ggplot2)
-
-#Gráfico dos aumentos
-ggplot(top_aumento, aes(x = reorder(Municipio, Dif1), y = Dif1)) +
+# Aumento
+graf_aumento <- ggplot(top_aumento,
+                       aes(x = reorder(Municipio, Dif), y = Dif)) +
   geom_col(fill = "steelblue") +
   coord_flip() +
+  geom_text(aes(label = Dif),
+            hjust = -0.1, size = 3.8) +
   labs(
-    title = "Municípios com Maior Aumento de Casos Positivos (2023 → 2024)",
+    title = "Top 10 Municípios com Maior Aumento de Casos Positivos (2023 → 2024)",
     x = "Município",
     y = "Aumento de casos"
   ) +
-  theme_minimal()
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+  ) +
+  ylim(0, max(top_aumento$Dif, na.rm = TRUE) * 1.15)
 
-#Gráfico das reduções 
-ggplot(top_reducao, aes(x = reorder(Municipio, Dif2), y = Dif2)) +
-  geom_col(fill = "firebrick") +
+graf_aumento
+
+# Redução
+library(scales)  # para pretty_breaks()
+
+graf_reducao <- ggplot(top_reducao,
+                       aes(x = reorder(Municipio, -Dif), y = Dif)) +
+  geom_col(fill="#ee9a00") +
   coord_flip() +
+  geom_text(aes(label = Dif),
+            hjust = -0.1, size = 3.8) +
   labs(
-    title = "Municípios com Maior Redução de Casos Positivos (2023 → 2024)",
+    title = "Top 10 Municípios com Maior Redução de Casos Positivos (2023 → 2024)",
     x = "Município",
     y = "Redução de casos"
   ) +
-  theme_minimal()
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title  = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_y_continuous(breaks = pretty_breaks()) 
 
-# 6) RANKING completo (do maior aumento à maior redução)
+graf_reducao
+
+# ======================================
+# 7. Ranking completo
+# ======================================
+
 ranking <- dados_diff %>%
-  arrange(desc(Dif1))
+  mutate(
+    Dif = Positivo_2024 - Positivo_2023,
+    Classificacao = case_when(
+      Dif > 0 ~ "Aumento",
+      Dif < 0 ~ "Redução",
+      TRUE    ~ "Estável"
+    )
+  ) %>%
+  arrange(desc(Dif))
+
