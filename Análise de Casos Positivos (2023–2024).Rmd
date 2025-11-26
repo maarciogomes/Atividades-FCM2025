@@ -1,133 +1,249 @@
 ---
-title: "Análise de Casos de Tuberculose (2023-2024)"
-author: "Gabriel, Marcio, Valdemiro, Raquel"
+title: "Analise dos Casos de Tuberculose - Estado de São Paulo (2023-2024)"
+author: "Gabriel M. Gandin, Marcio Gomes, Valdemiro Pitoro, Raquel Lima"
 date: "`r Sys.Date()`"
 output:
   html_document:
-    theme: cerulean
+    theme: flatly
     toc: true
     toc_float: true
+    number_sections: true
+    df_print: paged
 ---
+
 
 ```{r setup, include=FALSE}
-library(tidyverse)
-library(stringr)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(geobr)
+library(sf)
+library(ggplot2)
 library(scales)
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
-```
+library(stringr)
+library(knitr)
+library(googlesheets4) # Novo pacote para ler a planilha
 
-## 1. Introdução
-
-Este relatório apresenta a análise comparativa entre os casos de Tuberculose no período de 2023 a 2024 no estado de São Paulo.
-
----
-
-## 2. Importação e Estrutura dos Dados
-
-```{r}
-dados <- read_csv2(
-  "Dados_agrupados.csv",
-  locale = locale(encoding = "Latin1")
+knitr::opts_chunk$set(
+message = FALSE,
+warning = FALSE,
+fig.width = 10,
+fig.height = 6
 )
-glimpse(dados)
 ```
+
+## Introdução
+
+Este relatório apresenta uma análise detalhada dos casos de tuberculose nos anos de 2023 e 2024, incluindo: variação de casos positivos, taxa de positividade, distribuição espacial por município (mapas), diferenças entre faixas etárias, diferenças entre sexos.
+
+Todas as análises foram realizadas no R, utilizando tidyverse, geobr, ggplot2 e manipulação em formato coluna longa.
 
 ---
 
-## 3. Limpeza e Organização
+## Importação e Estrutura dos Dados
 
 ```{r}
+gs4_deauth()
+
+url_da_planilha <- "https://docs.google.com/spreadsheets/d/1TMzuJaXkG7vl7UFx_dBcqyXSnOyctpDiaebZAtylh2I/edit?usp=sharing" 
+
+# Importa a primeira aba (sheet = 1) da planilha.
+# Defina o tipo de autenticação como anônima (sem login) para links públicos.
+dados <- read_sheet(
+  ss = url_da_planilha, 
+  sheet = 1, # Defina o número ou nome da aba se não for a primeira
+  col_types = "dcccccddc" # Dica: Defina explicitamente os tipos de coluna para evitar problemas
+)
+
+
 dados <- dados %>%
-  rename(Masculino = Maculino_2023) %>%
-  mutate(
-    Municipio = `Município de notificação` %>%
-      str_remove_all("^\\s*\\d+\\s*[-]?\\s*") %>%
-      str_trim() %>%
-      str_to_title()
-  )
+  mutate(across(
+    c(positivo, negativo, feminino, masculino, fx_20_39, fx_40_59, codigo),
+    as.numeric
+  ))
 
-dados_sel <- dados %>%
-  select(
-    Municipio,
-    starts_with("Positivo"),
-    starts_with("Negativo")
-  )
 ```
 
 ---
 
-## 4. Diferença entre anos
+## Variação de Casos Positivos (2023 → 2024)
 
 ```{r}
-dados_diff <- dados_sel %>%
-  mutate(Dif = Positivo_2024 - Positivo_2023)
+dados_23_24 <- dados %>%
+filter(ano %in% c(2023, 2024)) %>%
+select(municipio, ano, positivo)
+
+dados_wide <- dados_23_24 %>%
+pivot_wider(
+names_from = ano,
+values_from = positivo,
+names_prefix = "ano_"
+) %>%
+mutate(
+ano_2023 = replace_na(ano_2023, 0),
+ano_2024 = replace_na(ano_2024, 0),
+diferenca = ano_2024 - ano_2023
+)
+
+top10_aumentos  <- dados_wide %>% arrange(desc(diferenca)) %>% slice(1:10)
+top10_reducoes  <- dados_wide %>% arrange(diferenca) %>% slice(1:10)
+
+### Top 10 Aumentos
+tema <- theme_minimal(base_size = 13) +
+theme(
+plot.title  = element_text(face = "bold", size = 15),
+axis.title  = element_text(face = "bold")
+)
+
+ggplot(top10_aumentos, aes(x = reorder(municipio, diferenca), y = diferenca)) +
+geom_col(fill = "steelblue") +
+coord_flip() +
+geom_text(aes(label = diferenca), hjust = -0.1, size = 4) +
+labs(
+title = "Top 10 Municípios com Maior Aumento (2023 → 2024)",
+x = "Município", y = "Aumento de Casos"
+) +
+tema +
+ylim(0, max(top10_aumentos$diferenca) * 1.15)
+
+### Top 10 Reduções
+ggplot(top10_reducoes, aes(x = reorder(municipio, diferenca), y = diferenca)) +
+geom_col(fill = "#ee9a00") +
+coord_flip() +
+geom_text(aes(label = diferenca), hjust = 1.1, size = 4) +
+labs(
+title = "Top 10 Municípios com Maior Redução (2023 → 2024)",
+x = "Município", y = "Redução de Casos"
+) +
+tema +
+scale_y_continuous(breaks = pretty_breaks())
 ```
 
 ---
 
-## 5. Top 10 aumentos e reduções
+## Taxa de positividade
 
 ```{r}
-top_aumento <- dados_diff %>% arrange(desc(Dif)) %>% slice(1:10)
-top_reducao <- dados_diff %>% arrange(Dif) %>% slice(1:10)
+df_analise <- dados %>%
+mutate(
+total_testes = positivo + negativo,
+taxa_positividade = positivo / total_testes
+) %>%
+filter(total_testes > 0)
+
+ranking_2024 <- df_analise %>% filter(ano == 2024) %>% arrange(desc(taxa_positividade))
+ranking_2023 <- df_analise %>% filter(ano == 2023) %>% arrange(desc(taxa_positividade))
+
+
 ```
 
 ---
 
-## 6. Gráficos
-
-### 6.1 Aumento
+## Mapas distribuição espacial
 
 ```{r}
-ggplot(top_aumento,
-       aes(x = reorder(Municipio, Dif), y = Dif)) +
-  geom_col(fill = "steelblue") +
-  coord_flip() +
-  geom_text(aes(label = Dif), hjust = -0.1) +
-  labs(
-    title = "Top 10 Municípios com Maior Aumento",
-    x = "Município", y = "Aumento de casos"
-  ) +
-  theme_minimal()
-```
+## Mapa 2024
+sp_shapes <- geobr::read_municipality(code_muni = "SP", year = 2020)
 
-### 6.2 Redução
+sp_shapes_mod <- sp_shapes %>%
+mutate(
+code_muni_texto = as.character(code_muni),
+codigo_6dig = substr(code_muni_texto, 1, 6),
+chave_join_num = as.numeric(codigo_6dig)
+)
 
-```{r}
-ggplot(top_reducao,
-       aes(x = reorder(Municipio, -Dif), y = Dif)) +
-  geom_col(fill="#ee9a00") +
-  coord_flip() +
-  geom_text(aes(label = Dif), hjust = -0.1) +
-  labs(
-    title = "Top 10 Municípios com Maior Redução",
-    x = "Município",
-    y = "Redução de casos"
-  ) +
-  theme_minimal() +
-  scale_y_continuous(breaks = pretty_breaks())
+dados_mapa_2024 <- df_analise %>%
+filter(ano == 2024) %>%
+mutate(chave_join_num = as.numeric(codigo))
+
+mapa_final_2024 <- left_join(sp_shapes_mod, dados_mapa_2024, by = "chave_join_num")
+
+ggplot(mapa_final_2024) +
+geom_sf(aes(fill = taxa_positividade)) +
+scale_fill_viridis_c(labels = percent) +
+theme_void()
+
+## Mapa 2023
+dados_mapa_2023 <- df_analise %>%
+filter(ano == 2023) %>%
+mutate(chave_join_num = as.numeric(codigo))
+
+mapa_final_2023 <- left_join(sp_shapes_mod, dados_mapa_2023, by = "chave_join_num")
+
+ggplot(mapa_final_2023) +
+geom_sf(aes(fill = taxa_positividade)) +
+scale_fill_viridis_c(labels = percent) +
+theme_void()
+
+## Comparação 2023 vs 2024
+dados_2024_simples <- dados_mapa_2024 %>% select(chave_join_num, taxa_2024 = taxa_positividade)
+dados_2023_simples <- dados_mapa_2023 %>% select(chave_join_num, taxa_2023 = taxa_positividade)
+
+mapa_comparacao <- sp_shapes_mod %>%
+left_join(dados_2024_simples, by = "chave_join_num") %>%
+left_join(dados_2023_simples, by = "chave_join_num") %>%
+mutate(delta_taxa = taxa_2024 - taxa_2023)
+
+ggplot(mapa_comparacao) +
+geom_sf(aes(fill = delta_taxa)) +
+scale_fill_gradient2(
+low = "blue", mid = "white", high = "red", midpoint = 0,
+labels = percent
+) +
+theme_void()
+
 ```
 
 ---
 
-## 7. Ranking completo
+## Casos positivos por sexo
 
 ```{r}
-ranking <- dados_diff %>%
-  mutate(
-    Classificacao = case_when(
-      Dif > 0 ~ "Aumento",
-      Dif < 0 ~ "Redução",
-      TRUE ~ "Estável"
-    )
-  ) %>%
-  arrange(desc(Dif))
+positivos_por_sexo_ano <- dados %>%
+filter(ano %in% c(2023, 2024)) %>%
+group_by(ano) %>%
+summarize(
+Feminino = sum(feminino, na.rm = TRUE),
+Masculino = sum(masculino, na.rm = TRUE)
+) %>%
+pivot_longer(cols = c(Feminino, Masculino),
+names_to = "sexo",
+values_to = "positivos")
 
-head(ranking, 20)
+ggplot(positivos_por_sexo_ano,
+aes(x = factor(ano), y = positivos, fill = sexo)) +
+geom_col(position = "dodge") +
+geom_text(aes(label = positivos), vjust = -0.5, position = position_dodge(0.7)) +
+scale_fill_manual(values = c("Feminino" = "#EC4899", "Masculino" = "#3B82F6")) +
+theme_minimal()
+
 ```
 
----
+## Casos positivos por faixa etária
 
-## 8. Conclusões
+```{r}
+positivos_por_idade_ano <- dados %>%
+filter(ano %in% c(2023, 2024)) %>%
+summarize(
+Faixa_20_39 = sum(fx_20_39, na.rm = TRUE),
+Faixa_40_59 = sum(fx_40_59, na.rm = TRUE),
+.by = ano
+) %>%
+pivot_longer(cols = starts_with("Faixa_"),
+names_to = "faixa",
+values_to = "positivos")
 
-A cidade de Lupercio apresentou o maior aumento de casos de Tuberculose entre os anos de 2023 para 2024 (392 novos casos), e a cidade de Lins a maior redução (redução em 8 casos).
+ggplot(positivos_por_idade_ano,
+aes(x = factor(ano), y = positivos, fill = faixa)) +
+geom_col(position = "dodge") +
+geom_text(aes(label = positivos), vjust = -0.5, position = position_dodge(0.7)) +
+scale_fill_manual(values = c("Faixa_20_39" = "steelblue", "Faixa_40_59" = "#ee9a00")) +
+theme_minimal()
+```
+
+## Conclusões
+
+  - Os dados mostram aumento dos casos de tuberculose de 2023 para 2024, com o sexo masculino apresentando valores significativamente maiores.
+  - Lupercio registrou o maior aumento de casos positivos no período (392 novos casos), enquanto Mirassol apresentou a maior redução (queda de 9 casos).
+  - A faixa etária de 20–39 anos apresentou o maior número total de casos, com 22.938 registros.
+
