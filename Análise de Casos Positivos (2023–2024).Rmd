@@ -13,8 +13,8 @@ output:
 
 
 ```{r setup, include=FALSE}
-library(readxl)
-library(dplyr)
+library(readxl) #Manipulação e transformação de dados [Essencial para filtrar linhas, selecionar colunas, etc.]
+library(dplyr) #Organização e arrumação de dados ("Tidy Data") [Usado para reestruturar dados, entre os formatos longo e #amplo]
 library(tidyr)
 library(geobr)
 library(sf)
@@ -246,4 +246,5 @@ theme_minimal()
   - Os dados mostram aumento dos casos de tuberculose de 2023 para 2024, com o sexo masculino apresentando valores significativamente maiores.
   - Lupercio registrou o maior aumento de casos positivos no período (392 novos casos), enquanto Mirassol apresentou a maior redução (queda de 9 casos).
   - A faixa etária de 20–39 anos apresentou o maior número total de casos, com 22.938 registros.
+
 
